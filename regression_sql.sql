@@ -11,6 +11,8 @@ select * from properties_2017;
 select * from propertylandusetype;
 describe properties_2017;
 select count(*) from properties_2017;
+select * from typeconstructiontype;
+
 
 SELECT propertylandusetypeid
 FROM propertylandusetype
@@ -24,9 +26,9 @@ WHERE propertylandusetypeid IN(
 	WHERE propertylandusedesc = "Single Family Residential")
 ;
 
-SELECT
-bedroomcnt, bathroomcnt, calculatedfinishedsquarefeet, 
-taxvaluedollarcnt, yearbuilt, taxamount, fips
+SELECT *
+-- bedroomcnt, bathroomcnt, calculatedfinishedsquarefeet, 
+-- taxvaluedollarcnt, yearbuilt, taxamount, fips, propertylandusetypeid
 FROM properties_2017
 WHERE propertylandusetypeid IN(
 	SELECT propertylandusetypeid
