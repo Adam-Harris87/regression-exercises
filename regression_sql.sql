@@ -16,7 +16,8 @@ select * from typeconstructiontype;
 
 SELECT propertylandusetypeid
 FROM propertylandusetype
-WHERE propertylandusedesc = "Single Family Residential";
+WHERE propertylandusedesc IN ("Single Family Residential", "Inferred Single Family Residential")
+;
 
 SELECT bedroomcnt, bathroomcnt, calculatedfinishedsquarefeet, taxvaluedollarcnt, yearbuilt, taxamount, fips
 FROM properties_2016
