@@ -13,10 +13,11 @@ def acquire_zillow_sfr():
     a local csv file, if one is not found, it will download the data from the codeup
     database. An env file is needed in the local directory in order to run this file.
     '''
-
+    # check to see if there is a csv of the dataset saved in the local directory
     if os.path.exists('zillow_2017_sfr.csv'):
         print('opening data from local file')
         df = pd.read_csv('zillow_2017_sfr.csv', index_col=0)
+    # if there is no local data, connect to codeup server and retrive the data
     else:
         # run sql query and write to csv
         print('local file not found')
@@ -35,6 +36,7 @@ def acquire_zillow_sfr():
         '''
         connection = env.get_db_url('zillow')
         df = pd.read_sql(query, connection)
+        # write the data to a local csv file
         df.to_csv('zillow_2017_sfr.csv')
 
     return df
