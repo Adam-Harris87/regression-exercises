@@ -7,6 +7,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 def acquire_zillow_sfr():
+    '''
+    This function will retrieve zillow home data for 2017 properties. It will only get
+    single family residential properties. the function will attempt to open the data from 
+    a local csv file, if one is not found, it will download the data from the codeup
+    database. An env file is needed in the local directory in order to run this file.
+    '''
+
     if os.path.exists('zillow_2017_sfr.csv'):
         print('opening data from local file')
         df = pd.read_csv('zillow_2017_sfr.csv', index_col=0)
@@ -71,6 +78,10 @@ def split_zillow(df):
     return train, validate, test
 
 def wrangle_zillow():
+    '''
+    This function will acquire the zillow dataset, clean the data, then split the data
+    into train, validate and test DataFrames.
+    '''
     return split_zillow(
         clean_zillow_sfr(
             acquire_zillow_sfr()))
