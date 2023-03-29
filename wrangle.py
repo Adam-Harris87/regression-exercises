@@ -5,9 +5,8 @@ from sklearn.model_selection import train_test_split
 import env
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.impute import SimpleImputer
 
-def acquire_zillow():
+def acquire_zillow_sfr():
     '''
     This function will retrieve zillow home data for 2017 properties. It will only get
     single family residential properties. the function will attempt to open the data from 
@@ -36,13 +35,14 @@ def acquire_zillow():
         connection = env.get_db_url('zillow')
         df = pd.read_sql(query, connection)
         df.to_csv('zillow_2017_sfr.csv')
-
+    
     # renaming column names to one's I like better
     df = df.rename(columns = {'bedroomcnt':'bedrooms', 
                               'bathroomcnt':'bathrooms', 
                               'calculatedfinishedsquarefeet':'area',
                               'taxvaluedollarcnt':'tax_value', 
-                              'yearbuilt':'year_built',})
+                              'yearbuilt':'year_built',
+                              'taxamount':'annual_tax'})
     return df
 
 def get_hist(df):
@@ -82,7 +82,7 @@ def get_box(df):
     ''' Gets boxplots of acquired continuous variables'''
     
     # List of columns
-    cols = ['bedrooms', 'bathrooms', 'area', 'tax_value', 'taxamount']
+    cols = ['bedrooms', 'bathrooms', 'area', 'tax_value', 'annual_tax']
 
     plt.figure(figsize=(16, 3))
 
@@ -128,40 +128,55 @@ def remove_outliers(df, col_list, k=1.5):
         
     return df
 
-def prepare_zillow(df):
-    ''' Prepare zillow data for exploration'''
-
+def clean_zillow_sfr(df):
+    '''
+    this function will take in a DataFrame of zillow single family resident data,
+    it will then remove rows will null values, then remove rows with 0 bedrooms or 
+    0 bathrooms, it will then change dtypes of bedroomcnt, calculatedfinishedsquarefeet,
+    taxvaluedollarcnt, yearbuilt, and fips to integer, then return the cleaned df
+    '''
     # removing outliers
-    df = remove_outliers(df, ['bedrooms', 'bathrooms', 'area', 'tax_value', 'taxamount'])
-    
+    df = remove_outliers(df, ['bedrooms', 'bathrooms', 'area', 'tax_value', 'annual_tax'])
+    df = df[df.area > 100]
+
+    # remove null values
+    df = df.dropna()
+
     # get distributions of numeric data
     get_hist(df)
     get_box(df)
     
     # converting column datatypes
-    df.fips = df.fips.astype(object)
-    df.year_built = df.year_built.astype(object)
-    
-    # train/validate/test split
-    train_validate, test = train_test_split(df, test_size=.2, random_state=123)
-    train, validate = train_test_split(train_validate, test_size=.3, random_state=123)
-    
-    # impute year built using mode
-    imputer = SimpleImputer(strategy='median')
+    # change dtypes of columns to int
+    df.bedrooms = df.bedrooms.astype(int)
+    df.area = df.area.astype(int)
+    df.year_built = df.year_built.astype(int)
+    df.tax_value = df.tax_value.astype(int)
+    df.fips = df.fips.astype(int)
+    # return the cleaned dataFrame
+    return df
 
-    imputer.fit(train[['year_built']])
-
-    train[['year_built']] = imputer.transform(train[['year_built']])
-    validate[['year_built']] = imputer.transform(validate[['year_built']])
-    test[['year_built']] = imputer.transform(test[['year_built']])       
-    
-    return train, validate, test    
+def split_zillow(df):
+    '''
+    this function will take in a cleaned zillow dataFrame and return the data split into
+    train, validate and test dataframes in preparation for ml modeling.
+    '''
+    train_val, test = train_test_split(df,
+                                      random_state=1342,
+                                      train_size=0.8)
+    train, validate = train_test_split(train_val,
+                                      random_state=1342,
+                                      train_size=0.7)
+    return train, validate, test
 
 def wrangle_zillow():
-    '''Acquire and prepare data from Zillow database for explore'''
-    train, validate, test = prepare_zillow(acquire_zillow())
-    
-    return train, validate, test
+    '''
+    This function will acquire the zillow dataset, clean the data, and split it
+    and return the data as train, validate, test
+    '''
+    return split_zillow(
+        clean_zillow_sfr(
+            acquire_zillow_sfr()))
 
 def scale_zillow(train, val, test):
     '''
