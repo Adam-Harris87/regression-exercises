@@ -37,3 +37,15 @@ WHERE propertylandusetypeid IN(
 	WHERE propertylandusedesc = "Single Family Residential")
 -- LIMIT 5
 ;
+
+SELECT unitcnt, parcelid
+-- bedroomcnt, bathroomcnt, calculatedfinishedsquarefeet, 
+-- taxvaluedollarcnt, yearbuilt, taxamount, fips, propertylandusetypeid
+FROM properties_2017
+WHERE propertylandusetypeid IN(
+ 	SELECT propertylandusetypeid
+	FROM propertylandusetype
+ 	WHERE propertylandusedesc = "Single Family Residential")
+order by parcelid
+-- LIMIT 5
+;

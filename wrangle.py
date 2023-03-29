@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
 import env
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -138,7 +139,7 @@ def clean_zillow_sfr(df):
     '''
     # removing outliers
     df = remove_outliers(df, ['bedrooms', 'bathrooms', 'area', 
-                              'tax_value', 'annual_tax', 'lot_size'])
+                              'tax_value', 'annual_tax'])
     # remove the nonsensical 2br 2 bath houses with less than 100 sq feet
     df = df[df.area > 100]
 
@@ -187,6 +188,7 @@ def scale_data(train,
                validate, 
                test, 
                columns_to_scale=['bedrooms', 'bathrooms', 'tax_value', 'lot_size'],
+               scaler=MinMaxScaler(),
                return_scaler=False):
     '''
     Scales the 3 data splits. 
@@ -197,8 +199,7 @@ def scale_data(train,
     train_scaled = train.copy()
     validate_scaled = validate.copy()
     test_scaled = test.copy()
-    #     make the thing
-    scaler = MinMaxScaler()
+    
     #     fit the thing
     scaler.fit(train[columns_to_scale])
     # applying the scaler:
