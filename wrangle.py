@@ -162,3 +162,25 @@ def wrangle_zillow():
     train, validate, test = prepare_zillow(acquire_zillow())
     
     return train, validate, test
+
+def scale_zillow(train, val, test):
+    '''
+    this function will scale the numberical columns in the zillow dataset.
+    This will take in the train, validate and test dataFrames, and will rescale the 
+    area and taxamount columns using a MinMaxScaler, and add new columns to the 
+    dataFrames with the scaled data.
+    '''
+    # create and fit a MinMaxScaler
+    scaler = sklearn.preprocessing.MinMaxScaler()
+    scaler.fit(train['area'].values.reshape(-1,1))
+    # create columns with the scaled data
+    train['area_train_scaled'] = scaler.transform(train['area'].values.reshape(-1,1))
+    val['area_validate_scaled'] = scaler.transform(val['area'].values.reshape(-1,1))
+    test['area_test_scaled'] = scaler.transform(test['area'].values.reshape(-1,1))
+    # creat and fit a MinMaxScaler
+    scaler = sklearn.preprocessing.MinMaxScaler()
+    scaler.fit(train['taxamount'].values.reshape(-1,1))
+    # create columns wiht the scaled data
+    train['taxamount_train_scaled'] = scaler.transform(train['taxamount'].values.reshape(-1,1))
+    val['taxamount_validate_scaled'] = scaler.transform(val['taxamount'].values.reshape(-1,1))
+    test['taxamount_test_scaled'] = scaler.transform(test['taxamount'].values.reshape(-1,1))
