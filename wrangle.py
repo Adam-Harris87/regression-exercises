@@ -23,7 +23,7 @@ def acquire_zillow_sfr():
         query = '''
     SELECT 
     bedroomcnt, bathroomcnt, calculatedfinishedsquarefeet, 
-    taxvaluedollarcnt, yearbuilt, taxamount, fips
+    taxvaluedollarcnt, yearbuilt, taxamount, fips, lotsizesquarefeet
     FROM properties_2017
     WHERE propertylandusetypeid IN(
         SELECT propertylandusetypeid
@@ -42,7 +42,8 @@ def acquire_zillow_sfr():
                               'calculatedfinishedsquarefeet':'area',
                               'taxvaluedollarcnt':'tax_value', 
                               'yearbuilt':'year_built',
-                              'taxamount':'annual_tax'})
+                              'taxamount':'annual_tax',
+                              'lotsizesquarefeet':'lot_size'})
     return df
 
 def get_hist(df):
@@ -82,7 +83,7 @@ def get_box(df):
     ''' Gets boxplots of acquired continuous variables'''
     
     # List of columns
-    cols = ['bedrooms', 'bathrooms', 'area', 'tax_value', 'annual_tax']
+    cols = ['bedrooms', 'bathrooms', 'area', 'tax_value', 'annual_tax', 'lot_size']
 
     plt.figure(figsize=(16, 3))
 
@@ -136,7 +137,9 @@ def clean_zillow_sfr(df):
     taxvaluedollarcnt, yearbuilt, and fips to integer, then return the cleaned df
     '''
     # removing outliers
-    df = remove_outliers(df, ['bedrooms', 'bathrooms', 'area', 'tax_value', 'annual_tax'])
+    df = remove_outliers(df, ['bedrooms', 'bathrooms', 'area', 
+                              'tax_value', 'annual_tax', 'lot_size'])
+    # remove the nonsensical 2br 2 bath houses with less than 100 sq feet
     df = df[df.area > 100]
 
     # remove null values
@@ -153,6 +156,8 @@ def clean_zillow_sfr(df):
     df.year_built = df.year_built.astype(int)
     df.tax_value = df.tax_value.astype(int)
     df.fips = df.fips.astype(int)
+    df.lot_size = df.lot_size.astype(int)
+
     # return the cleaned dataFrame
     return df
 
@@ -178,24 +183,36 @@ def wrangle_zillow():
         clean_zillow_sfr(
             acquire_zillow_sfr()))
 
-def scale_zillow(train, val, test):
+def scale_data(train, 
+               validate, 
+               test, 
+               columns_to_scale=['bedrooms', 'bathrooms', 'tax_value', 'lot_size'],
+               return_scaler=False):
     '''
-    this function will scale the numberical columns in the zillow dataset.
-    This will take in the train, validate and test dataFrames, and will rescale the 
-    area and taxamount columns using a MinMaxScaler, and add new columns to the 
-    dataFrames with the scaled data.
+    Scales the 3 data splits. 
+    Takes in train, validate, and test data splits and returns their scaled counterparts.
+    If return_scalar is True, the scaler object will be returned as well
     '''
-    # create and fit a MinMaxScaler
-    scaler = sklearn.preprocessing.MinMaxScaler()
-    scaler.fit(train['area'].values.reshape(-1,1))
-    # create columns with the scaled data
-    train['area_train_scaled'] = scaler.transform(train['area'].values.reshape(-1,1))
-    val['area_validate_scaled'] = scaler.transform(val['area'].values.reshape(-1,1))
-    test['area_test_scaled'] = scaler.transform(test['area'].values.reshape(-1,1))
-    # creat and fit a MinMaxScaler
-    scaler = sklearn.preprocessing.MinMaxScaler()
-    scaler.fit(train['taxamount'].values.reshape(-1,1))
-    # create columns wiht the scaled data
-    train['taxamount_train_scaled'] = scaler.transform(train['taxamount'].values.reshape(-1,1))
-    val['taxamount_validate_scaled'] = scaler.transform(val['taxamount'].values.reshape(-1,1))
-    test['taxamount_test_scaled'] = scaler.transform(test['taxamount'].values.reshape(-1,1))
+    # make copies of our original data so we dont gronk up anything
+    train_scaled = train.copy()
+    validate_scaled = validate.copy()
+    test_scaled = test.copy()
+    #     make the thing
+    scaler = MinMaxScaler()
+    #     fit the thing
+    scaler.fit(train[columns_to_scale])
+    # applying the scaler:
+    train_scaled[columns_to_scale] = pd.DataFrame(scaler.transform(train[columns_to_scale]),
+                                                  columns=train[columns_to_scale].columns.values, 
+                                                  index = train.index)
+                                                  
+    validate_scaled[columns_to_scale] = pd.DataFrame(scaler.transform(validate[columns_to_scale]),
+                                                  columns=validate[columns_to_scale].columns.values).set_index([validate.index.values])
+    
+    test_scaled[columns_to_scale] = pd.DataFrame(scaler.transform(test[columns_to_scale]),
+                                                 columns=test[columns_to_scale].columns.values).set_index([test.index.values])
+    
+    if return_scaler:
+        return scaler, train_scaled, validate_scaled, test_scaled
+    else:
+        return train_scaled, validate_scaled, test_scaled
