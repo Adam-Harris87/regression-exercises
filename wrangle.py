@@ -24,7 +24,7 @@ def acquire_zillow_sfr():
         query = '''
     SELECT 
     bedroomcnt, bathroomcnt, calculatedfinishedsquarefeet, 
-    taxvaluedollarcnt, yearbuilt, taxamount, fips, lotsizesquarefeet
+    taxvaluedollarcnt, yearbuilt, taxamount, fips
     FROM properties_2017
     WHERE propertylandusetypeid IN(
         SELECT propertylandusetypeid
@@ -43,8 +43,7 @@ def acquire_zillow_sfr():
                               'calculatedfinishedsquarefeet':'area',
                               'taxvaluedollarcnt':'tax_value', 
                               'yearbuilt':'year_built',
-                              'taxamount':'annual_tax',
-                              'lotsizesquarefeet':'lot_size'})
+                              'taxamount':'annual_tax'})
     return df
 
 def get_hist(df):
@@ -84,7 +83,7 @@ def get_box(df):
     ''' Gets boxplots of acquired continuous variables'''
     
     # List of columns
-    cols = ['bedrooms', 'bathrooms', 'area', 'tax_value', 'annual_tax', 'lot_size']
+    cols = ['bedrooms', 'bathrooms', 'area', 'tax_value', 'annual_tax']
 
     plt.figure(figsize=(16, 3))
 
@@ -157,7 +156,6 @@ def clean_zillow_sfr(df):
     df.year_built = df.year_built.astype(int)
     df.tax_value = df.tax_value.astype(int)
     df.fips = df.fips.astype(int)
-    df.lot_size = df.lot_size.astype(int)
 
     # return the cleaned dataFrame
     return df
@@ -187,7 +185,7 @@ def wrangle_zillow():
 def scale_data(train, 
                validate, 
                test, 
-               columns_to_scale=['bedrooms', 'bathrooms', 'tax_value', 'lot_size'],
+               columns_to_scale=['bedrooms', 'bathrooms', 'tax_value'],
                scaler=MinMaxScaler(),
                return_scaler=False):
     '''
