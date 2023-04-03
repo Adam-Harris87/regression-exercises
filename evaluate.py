@@ -5,11 +5,11 @@ from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def plot_residuals(x, y, yhat):
-    plt.scatter(x.sample(500), y.sample(500))
+def plot_residuals(y, yhat):
+    plt.scatter(y, (yhat - y))
 
     # The lineplot is my regression line used for predictions
-    plt.plot(x, yhat, color='red')
+    plt.axhline(0, color='red')
 
     plt.xlabel('actual tax value')
     plt.ylabel('predicted tax value')
