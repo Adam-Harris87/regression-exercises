@@ -215,3 +215,16 @@ def scale_data(train,
         return scaler, train_scaled, validate_scaled, test_scaled
     else:
         return train_scaled, validate_scaled, test_scaled
+    
+def split_data(df):
+    '''
+    this function will take in a dataFrame and return the data split into
+    train, validate and test dataframes in preparation for ml modeling.
+    '''
+    train_val, test = train_test_split(df,
+                                      random_state=1342,
+                                      train_size=0.8)
+    train, validate = train_test_split(train_val,
+                                      random_state=1342,
+                                      train_size=0.7)
+    return train, validate, test
