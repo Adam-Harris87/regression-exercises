@@ -3,7 +3,9 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+from sklearn.linear_model import LinearRegression
+from sklearn.feature_selection import SelectKBest, RFE, \
+f_regression
 from scipy.stats import pearsonr, spearmanr
 
 def plot_variable_pairs(df):
