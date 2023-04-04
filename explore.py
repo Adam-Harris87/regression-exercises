@@ -14,7 +14,10 @@ def plot_variable_pairs(df):
     relationships along with a regression line for each pair
     '''
     # take a sample of the dataFrame in order to cut down computing time
-    sample = df.sample(1000)
+    if len(df) > 1000:
+        sample = df.sample(1000)
+    else:
+        sample = df
     # create a pairplot
     sns.pairplot(sample, corner=True, kind='reg', plot_kws={'color': 'blue'})
     plt.show()
