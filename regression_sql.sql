@@ -12,7 +12,8 @@ select * from propertylandusetype;
 describe properties_2017;
 select count(*) from properties_2017;
 select * from typeconstructiontype;
-
+select * from airconditioningtype;
+select * from predictions_2017;
 
 SELECT propertylandusetypeid
 FROM propertylandusetype
@@ -27,25 +28,32 @@ WHERE propertylandusetypeid IN(
 	WHERE propertylandusedesc = "Single Family Residential")
 ;
 
-SELECT *
--- bedroomcnt, bathroomcnt, calculatedfinishedsquarefeet, 
--- taxvaluedollarcnt, yearbuilt, taxamount, fips, propertylandusetypeid
-FROM properties_2017
-WHERE propertylandusetypeid IN(
-	SELECT propertylandusetypeid
-	FROM propertylandusetype
-	WHERE propertylandusedesc = "Single Family Residential")
--- LIMIT 5
+WITH cte_sfr as(
+	SELECT * 
+    FROM properties_2017
+    WHERE propertylandusetypeid IN (
+		SELECT propertylandusetypeid
+		FROM propertylandusetype
+		WHERE propertylandusedesc IN( 
+			"Single Family Residential", "Inferred Single Family Residential"))
+	AND parcelid IN (
+		SELECT parcelid
+        FROM predictions_2017)
+)
+
+SELECT bedroomcnt, bathroomcnt, calculatedfinishedsquarefeet,
+	garagecarcnt, garagetotalsqft, lotsizesquarefeet, poolcnt, poolsizesum,
+	yearbuilt, fips, regionidcity, taxvaluedollarcnt, taxamount
+FROM cte_sfr
 ;
 
-SELECT unitcnt, parcelid,
-bedroomcnt, bathroomcnt, calculatedfinishedsquarefeet, 
-taxvaluedollarcnt, yearbuilt, taxamount, fips, propertylandusetypeid, lotsizesquarefeet
+SELECT *
 FROM properties_2017
 WHERE propertylandusetypeid IN(
  	SELECT propertylandusetypeid
 	FROM propertylandusetype
  	WHERE propertylandusedesc = "Single Family Residential")
-AND lotsizesquarefeet = 6971010
--- LIMIT 5
+LIMIT 5
 ;
+
+select * from predictions_2017;
